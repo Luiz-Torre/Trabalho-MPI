@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include "mpi.h"
 #include <math.h>
-#define TAMANHO 500000
+#define TAMANHO 1000000
 
 int primo (int n) {
 int i;
@@ -17,6 +17,7 @@ double t_inicial, t_final;
 int cont = 0, total = 0;
 int i, n;
 int meu_ranque, num_procs, inicio, dest, raiz=0, tag=1, stop=0;
+MPI_Request request;
 MPI_Status estado;
 /* Verifica o número de argumentos passados */
 	if (argc < 2) {
@@ -43,7 +44,8 @@ MPI_Status estado;
         }
 /* Fica recebendo as contagens parciais de cada processo */
         while (stop < (num_procs-1)) {
-		    MPI_Recv(&cont, 1, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &estado);
+		    MPI_Irecv(&cont, 1, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &request);
+            MPI_Wait(&request, &estado);
             total += cont;
             dest = estado.MPI_SOURCE;
             if (inicio > n) {
@@ -58,7 +60,8 @@ MPI_Status estado;
     else { 
 /* Cada processo escravo recebe o início do espaço de busca */
         while (estado.MPI_TAG != 99) {
-            MPI_Recv(&inicio, 1, MPI_INT, raiz, MPI_ANY_TAG, MPI_COMM_WORLD, &estado);
+            MPI_Irecv(&inicio, 1, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &request);
+            MPI_Wait(&request, &estado);
             if (estado.MPI_TAG != 99) {
                 for (i = inicio, cont=0; i < (inicio + TAMANHO) && i < n; i+=2) 
 		            if (primo(i) == 1)
