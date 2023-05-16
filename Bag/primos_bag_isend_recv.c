@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include "mpi.h"
 #include <math.h>
-#define TAMANHO 500000
+#define TAMANHO 1000000
 
 int primo (int n) {
 int i;
@@ -18,6 +18,7 @@ int cont = 0, total = 0;
 int i, n;
 int meu_ranque, num_procs, inicio, dest, raiz=0, tag=1, stop=0;
 MPI_Status estado;
+MPI_Request request;
 /* Verifica o número de argumentos passados */
 	if (argc < 2) {
         printf("Entre com o valor do maior inteiro como parâmetro para o programa.\n");
@@ -39,7 +40,7 @@ MPI_Status estado;
 /* Envia pedaços com TAMANHO números para cada processo */
     if (meu_ranque == 0) { 
         for (dest=1, inicio=3; dest < num_procs && inicio < n; dest++, inicio += TAMANHO) {
-            MPI_Isend(&inicio, 1, MPI_INT, dest, tag, MPI_COMM_WORLD);
+            MPI_Isend(&inicio, 1, MPI_INT, dest, tag, MPI_COMM_WORLD, &request);
         }
 /* Fica recebendo as contagens parciais de cada processo */
         while (stop < (num_procs-1)) {
@@ -51,7 +52,7 @@ MPI_Status estado;
                 stop++;
             }
 /* Envia um nvo pedaço com TAMANHO números para o mesmo processo*/
-            MPI_Isend(&inicio, 1, MPI_INT, dest, tag, MPI_COMM_WORLD);
+            MPI_Isend(&inicio, 1, MPI_INT, dest, tag, MPI_COMM_WORLD, &request);
             inicio += TAMANHO;
         }
     }       
@@ -64,7 +65,7 @@ MPI_Status estado;
 		            if (primo(i) == 1)
                         cont++;
 /* Envia a contagem parcial para o processo mestre */
-                MPI_Isend(&cont, 1, MPI_INT, raiz, tag, MPI_COMM_WORLD);
+                MPI_Isend(&cont, 1, MPI_INT, raiz, tag, MPI_COMM_WORLD, &request);
             } 
         } 
 /* Registra o tempo final de execução */
