@@ -44,7 +44,7 @@ int main(int argc, char *argv[]) {
     if (num_procs > 1) { // Se houver mais de um processo em execução
         if (meu_ranque != 0) {
         // MPI_Ssend
-        // MPI_Ssend(&cont, 1, MPI_INT, 0, tag, MPI_COMM_WORLD); // Envia o valor de cont para o processo de ranque 0 usando envio síncrono
+        MPI_Ssend(&cont, 1, MPI_INT, 0, tag, MPI_COMM_WORLD); // Envia o valor de cont para o processo de ranque 0 usando envio síncrono
         } else {
             total = cont;
              //MPI_Irecv
